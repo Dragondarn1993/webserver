@@ -23,7 +23,7 @@ v="$(cat /htdocs/version.json | tr -d '\r\n')"
 vlen="$((27-${#v}))"
 
 echo '+ ------------------------------------------------------------------ +'
-printf '|                      LINKSTACK v%s%*s|\n' "${v}" "$vlen" | tr ' ' " "
+printf '|                      WEBSERVER v%s%*s|\n' "${v}" "$vlen" | tr ' ' " "
 
 # + ---------------- + #
 # | -- HTTPD.CONF -- | #

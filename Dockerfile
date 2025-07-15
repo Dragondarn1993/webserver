@@ -1,6 +1,6 @@
 FROM alpine:3.22.0
-LABEL maintainer="JulianPrieber"
-LABEL description="LinkStack Docker"
+LABEL maintainer="Dragondarn"
+LABEL description="Web Server"
 
 EXPOSE 80 443
 
@@ -9,39 +9,39 @@ RUN apk --no-cache --update \
     add apache2 \
     apache2-ssl \
     curl \
-    php82-apache2 \
-    php82-bcmath \
-    php82-bz2 \
-    php82-calendar \
-    php82-common \
-    php82-ctype \
-    php82-curl \
-    php82-dom \
-    php82-fileinfo \
-    php82-gd \
-    php82-iconv \
-    php82-json \
-    php82-mbstring \
-    php82-mysqli \
-    php82-mysqlnd \
-    php82-openssl \
-    php82-pdo_mysql \
-    php82-pdo_pgsql \
-    php82-pdo_sqlite \
-    php82-phar \
-    php82-session \
-    php82-xml \
-    php82-tokenizer \
-    php82-zip \
-    php82-xmlwriter \
-    php82-redis \
+    php84-apache2 \
+    php84-bcmath \
+    php84-bz2 \
+    php84-calendar \
+    php84-common \
+    php84-ctype \
+    php84-curl \
+    php84-dom \
+    php84-fileinfo \
+    php84-gd \
+    php84-iconv \
+    php84-json \
+    php84-mbstring \
+    php84-mysqli \
+    php84-mysqlnd \
+    php84-openssl \
+    php84-pdo_mysql \
+    php84-pdo_pgsql \
+    php84-pdo_sqlite \
+    php84-phar \
+    php84-session \
+    php84-xml \
+    php84-tokenizer \
+    php84-zip \
+    php84-xmlwriter \
+    php84-redis \
     tzdata \
     && mkdir /htdocs
 
 COPY linkstack /htdocs
 COPY configs/apache2/httpd.conf /etc/apache2/httpd.conf
 COPY configs/apache2/ssl.conf /etc/apache2/conf.d/ssl.conf
-COPY configs/php/php.ini /etc/php8.2/php.ini
+COPY configs/php/php.ini /etc/php8.4/php.ini
 
 RUN chown apache:apache /etc/ssl/apache2/server.pem
 RUN chown apache:apache /etc/ssl/apache2/server.key

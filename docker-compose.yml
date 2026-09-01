@@ -25,7 +25,7 @@ services:
     links:
       - mysql
   mysql:
-    image: mysql:9
+    image: mysql:26
     environment:
         MYSQL_ROOT_PASSWORD: xeFgUGb5mPPn5q2d
     ports:

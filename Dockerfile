@@ -9,6 +9,7 @@ RUN apk --no-cache --update \
     add apache2 \
     apache2-ssl \
     curl \
+    php85-apache2 \
     php85-apcu \
     php85-bcmath \
     php85-calendar \

@@ -8,6 +8,7 @@ EXPOSE 80 443
 RUN apk --no-cache --update \
     add apache2 \
     apache2-ssl \
+    cron \
     curl \
     php85-apache2 \
     php85-bcmath \

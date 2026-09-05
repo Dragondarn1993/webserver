@@ -1,62 +1,48 @@
-FROM alpine:3.24.1
-LABEL maintainer="Dragondarn"
-LABEL description="Web Server"
+# Basis: PHP + Apache
+FROM php:8.5-apache
 
-EXPOSE 80 443
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Setup apache and php
-RUN apk --no-cache --update \
-    add apache2 \
-    apache2-ssl \
-    curl \
-    php85-apache2 \
-    php85-bcmath \
-    php85-bz2 \
-    php85-calendar \
-    php85-common \
-    php85-ctype \
-    php85-curl \
-    php85-dom \
-    php85-fileinfo \
-    php85-gd \
-    php85-iconv \
-    php85-json \
-    php85-mbstring \
-    php85-mysqli \
-    php85-mysqlnd \
-    php85-openssl \
-    php85-pdo_mysql \
-    php85-pdo_pgsql \
-    php85-pdo_sqlite \
-    php85-phar \
-    php85-session \
-    php85-xml \
-    php85-tokenizer \
-    php85-zip \
-    php85-xmlwriter \
-    php85-redis \
-    tzdata \
-    && mkdir /htdocs
+# Systemabhängigkeiten für Erweiterungen
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential autoconf pkg-config git unzip wget ca-certificates \
+    libzip-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libwebp-dev \
+    libonig-dev libicu-dev libxml2-dev libxslt1-dev libssl-dev \
+    libmagickwand-dev imagemagick \
+    libldap2-dev libsasl2-dev \
+    libgmp-dev libsqlite3-dev default-libmysqlclient-dev \
+    libpq-dev zlib1g-dev libbz2-dev libtidy-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY linkstack /htdocs
-COPY configs/apache2/httpd.conf /etc/apache2/httpd.conf
-COPY configs/apache2/ssl.conf /etc/apache2/conf.d/ssl.conf
-COPY configs/php/php.ini /etc/php8.5/php.ini
+# Configure / build / enable extensions
+RUN set -eux; \
+    # GD konfigurieren (JPEG/Freetype/WebP)
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    # LDAP ggf. konfigurieren (Pfad-Einstellung trägt Kompatibilität bei Debian-basierten images)
+    docker-php-ext-configure ldap --with-libdir=/usr/lib/x86_64-linux-gnu || true; \
+    # Intl braucht libicu (installiert oben)
+    \
+    # Kompilieren/Installieren zahlreicher core-Extensions
+    docker-php-ext-install -j"$(nproc)" \
+        bcmath calendar exif ftp gettext gmp intl mbstring \
+        mysqli pcntl pdo_mysql pdo_pgsql pdo_sqlite pgsql phar posix readline shmop \
+        soap sockets sodium sysvmsg sysvsem sysvshm tidy tokenizer \
+        xml xmlreader xmlwriter xsl zip zlib sqlite3 gd; \
+    \
+    # PECL-Extensions installieren und aktivieren
+    pecl channel-update pecl.php.net; \
+    pecl install apcu igbinary imagick redis mongodb || (echo "PECL install failed"; exit 1); \
+    docker-php-ext-enable apcu igbinary imagick redis mongodb; \
+    \
+    # Apache modules
+    a2enmod rewrite headers expires; \
+    \
+    # Aufräumen (listen löschen bereits oben)
+    rm -rf /tmp/pear
 
-RUN chown 2000:2000 /etc/ssl/apache2/server.pem
-RUN chown 2000:2000 /etc/ssl/apache2/server.key
+# Optional: eigene php.ini (falls du Einstellungen anpassen willst)
+# COPY ./php.ini /usr/local/etc/php/php.ini
 
-RUN chown -R 2000:2000 /htdocs
-RUN find /htdocs -type d -print0 | xargs -0 chmod 0755
-RUN find /htdocs -type f -print0 | xargs -0 chmod 0644
+EXPOSE 80
 
-COPY --chmod=0755 docker-entrypoint.sh /usr/local/bin/
-
-USER 2000:2000
-
-HEALTHCHECK CMD curl -f http://localhost -A "HealthCheck" || exit 1
-
-# Set console entry path
-WORKDIR /htdocs
-
-CMD ["docker-entrypoint.sh"]
+CMD ["apache2-foreground"]

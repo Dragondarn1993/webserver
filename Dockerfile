@@ -1,4 +1,4 @@
-FROM php:8.5-apache
+FROM php:8.6-apache
 
 # Download and activate the mlocati helper script
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
